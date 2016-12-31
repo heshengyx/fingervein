@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.IUserMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.User" id="user">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="SEX" property="sex" jdbcType="VARCHAR" />
+		<result column="EMAIL" property="email" jdbcType="VARCHAR" />
+		<result column="PHONE" property="phone" jdbcType="VARCHAR" />
+		<result column="ACCOUNT" property="account" jdbcType="VARCHAR" />
+		<result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+		<result column="ORG_ID" property="orgId" jdbcType="VARCHAR" />
+		<result column="ADMIN" property="admin" jdbcType="VARCHAR" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlQuery">
+		FROM USER a where 1=1
+		
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="user">
+    	SELECT * FROM USER WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="user">
+    	SELECT * FROM USER WHERE ACCOUNT = #{param.account, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="user">
+		SELECT a.* <include refid="sqlQuery"/>
+			order by a.CREATE_TIME desc limit #{start, jdbcType=INTEGER}, #{end, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="user">
+		SELECT a.* FROM USER a
+			order by a.CREATE_TIME desc
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO USER
+		  (ID,
+		    NAME,
+			CODE,
+			SEX,
+			EMAIL,
+			PHONE,
+			ACCOUNT,
+			PASSWORD,
+			ORG_ID,
+			ADMIN,
+		    VERSION,
+		    CREATE_TIME,
+		    CREATE_BY,
+		    REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.name, jdbcType=VARCHAR},
+            #{param.code, jdbcType=VARCHAR},
+            #{param.sex, jdbcType=VARCHAR},
+            #{param.email, jdbcType=VARCHAR},
+            #{param.phone, jdbcType=VARCHAR},
+            #{param.account, jdbcType=VARCHAR},
+            #{param.password, jdbcType=VARCHAR},
+            #{param.orgId, jdbcType=VARCHAR},
+            #{param.admin, jdbcType=VARCHAR},
+		    #{param.version, jdbcType=INTEGER},
+		    #{param.createTime, jdbcType=TIMESTAMP},
+		    #{param.createBy, jdbcType=VARCHAR},
+		    #{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO USER
+		  (ID,
+		    NAME,
+			CODE,
+			SEX,
+			EMAIL,
+			PHONE,
+			ACCOUNT,
+			PASSWORD,
+			ORG_ID,
+			ADMIN,
+		    VERSION,
+		    CREATE_TIME,
+		    CREATE_BY,
+		    REMARKS)
+		VALUES
+		<foreach collection="list" item="param" index="index" separator="," >
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.name, jdbcType=VARCHAR},
+			#{param.code, jdbcType=VARCHAR},
+			#{param.sex, jdbcType=VARCHAR},
+			#{param.email, jdbcType=VARCHAR},
+			#{param.phone, jdbcType=VARCHAR},
+			#{param.account, jdbcType=VARCHAR},
+			#{param.password, jdbcType=VARCHAR},
+			#{param.orgId, jdbcType=VARCHAR},
+			#{param.admin, jdbcType=VARCHAR},
+		    #{param.version, jdbcType=INTEGER},
+		    #{param.createTime, jdbcType=TIMESTAMP},
+		    #{param.createBy, jdbcType=VARCHAR},
+		    #{param.remarks, jdbcType=VARCHAR})
+		</foreach>  
+	</insert>
+	
+	<update id="update">
+		UPDATE USER a
+		<set>
+		<if test="param.name != null and param.name != ''">
+		 a.NAME = #{param.name, jdbcType=VARCHAR},
+		</if>
+		<if test="param.code != null and param.code != ''">
+		 a.CODE = #{param.code, jdbcType=VARCHAR},
+		</if>
+		<if test="param.sex != null and param.sex != ''">
+		 a.SEX = #{param.sex, jdbcType=VARCHAR},
+		</if>
+		<if test="param.email != null and param.email != ''">
+		 a.EMAIL = #{param.email, jdbcType=VARCHAR},
+		</if>
+		<if test="param.phone != null and param.phone != ''">
+		 a.PHONE = #{param.phone, jdbcType=VARCHAR},
+		</if>
+		<if test="param.account != null and param.account != ''">
+		 a.ACCOUNT = #{param.account, jdbcType=VARCHAR},
+		</if>
+		<if test="param.password != null and param.password != ''">
+		 a.PASSWORD = #{param.password, jdbcType=VARCHAR},
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+		 a.ORG_ID = #{param.orgId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.admin != null and param.admin != ''">
+		 a.ADMIN = #{param.admin, jdbcType=VARCHAR},
+		</if>
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete from USER a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete from USER a where a.ID = #{param.id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete from USER a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

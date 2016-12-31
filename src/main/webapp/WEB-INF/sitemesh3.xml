@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemesh>
+	<!-- 对不同的路径，启用不同的装饰器 -->
+	<mapping path="/manager" decorator="/WEB-INF/layout/managerLayout.jsp"/>
+	<mapping path="/manager/organization/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+	<mapping path="/manager/employee/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/terminal/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/style/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/associate/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/permission/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/role/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/user/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/recognitionLog/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <mapping path="/manager/report/list" decorator="/WEB-INF/layout/tabLayout.jsp"/>
+    <!-- sitemesh-conf -->
+	
+	<!-- 排除，不进行装饰的路径 -->
+	<mapping path="/css/*" exclude="true"/>
+	<mapping path="/images/*" exclude="true"/>
+	<mapping path="/js/*" exclude="true"/>
+	<mapping path="/locale/*" exclude="true"/>
+	<mapping path="/plugins/*" exclude="true"/>
+	<mapping path="/themes/*" exclude="true"/>
+	
+	<!-- 自定义 tag 规则 -->
+	<content-processor>
+		<tag-rule-bundle class="com.grgbanking.fingervein.bundle.JscriptTagRuleBundle" />
+	</content-processor>
+</sitemesh>

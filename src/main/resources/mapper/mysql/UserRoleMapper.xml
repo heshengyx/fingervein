@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.IUserRoleMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.UserRole" id="userRole">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+        <result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlQuery">
+		FROM USER_ROLE a where 1=1
+		
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND date_format(a.CREATE_TIME, '%Y-%m-%d') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND date_format(a.CREATE_TIME, '%Y-%m-%d') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="userRole">
+    	SELECT * FROM USER_ROLE WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="userRole">
+    	SELECT * FROM USER_ROLE WHERE ID = #{param.id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="userRole">
+		SELECT a.* <include refid="sqlQuery"/>
+			order by a.CREATE_TIME desc limit #{start, jdbcType=INTEGER}, #{end, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="userRole">
+		SELECT a.* FROM USER_ROLE a
+		    where a.USER_ID = #{param.userId, jdbcType=VARCHAR}
+			order by a.CREATE_TIME desc
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO USER_ROLE
+		  (ID,
+		   	USER_ID,
+			ROLE_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		   #{param.userId, jdbcType=VARCHAR},
+			#{param.roleId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO USER_ROLE
+		  (ID,
+		   	USER_ID,
+			ROLE_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		<foreach collection="list" item="param" index="index" separator="," >
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.userId, jdbcType=VARCHAR},
+			#{param.roleId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+		</foreach>  
+	</insert>
+	
+	<update id="update">
+		UPDATE USER_ROLE a
+		<set>
+		<if test="param.userId != null and param.userId != ''">
+		 a.USER_ID = #{param.userId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.roleId != null and param.roleId != ''">
+		 a.ROLE_ID = #{param.roleId, jdbcType=VARCHAR},
+		</if>
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete from USER_ROLE a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete from USER_ROLE a where a.USER_ID = #{param.userId, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete from USER_ROLE a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.ITerminalMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.Terminal" id="terminal">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="ORG_ID" property="orgId" jdbcType="VARCHAR" />
+		<result column="STYLE_ID" property="styleId" jdbcType="VARCHAR" />
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="IPADDR" property="ipaddr" jdbcType="VARCHAR" />
+		<result column="HEARTBEAT" property="heartbeat" jdbcType="TIMESTAMP" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap type="com.grgbanking.fingervein.data.TerminalQueryData" id="terminalQueryData">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+		<result column="STYLE_NAME" property="styleName" jdbcType="VARCHAR" />
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="IPADDR" property="ipaddr" jdbcType="VARCHAR" />
+		<result column="LOCATION" property="location" jdbcType="VARCHAR" />
+		<result column="HEARTBEAT" property="heartbeat" jdbcType="TIMESTAMP" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlQuery">
+		FROM FV_TERMINAL a 
+			left join FV_STYLE b on a.STYLE_ID = b.ID
+			left join FV_ORGANIZATION c on a.ORG_ID = c.ID 
+		where 1=1
+		<if test="param.name != null and param.name != ''">
+		 	AND a.NAME = #{param.name}
+		</if>
+		<if test="param.code != null and param.code != ''">
+		 	AND a.CODE = #{param.code}
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+		 	AND a.ORG_ID = #{param.orgId}
+		</if>
+		<if test="param.styleId != null and param.styleId != ''">
+		 	AND a.STYLE_ID = #{param.styleId}
+		</if>
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	<sql id="sqlQueryData">
+		FROM FV_TERMINAL a left join FV_STYLE b on a.STYLE_ID = b.ID where 1=1
+		<if test="param.name != null and param.name != ''">
+		 	AND a.NAME = #{param.name}
+		</if>
+		<if test="param.code != null and param.code != ''">
+		 	AND a.CODE = #{param.code}
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+		 	AND a.ORG_ID = #{param.orgId}
+		</if>
+		<if test="param.orgId == null or param.orgId == ''">
+            AND (a.ORG_ID is null or a.ORG_ID = '')
+        </if>
+		<if test="param.styleId != null and param.styleId != ''">
+		 	AND a.STYLE_ID = #{param.styleId}
+		</if>
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="terminal">
+    	SELECT * FROM FV_TERMINAL WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="terminal">
+    	SELECT a.* FROM FV_TERMINAL a WHERE 1=1
+    		AND a.CODE = #{param.code}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="terminalQueryData">
+		SELECT t.*
+		  FROM (SELECT tt.*, ROWNUM AS ROWNO
+		          FROM (SELECT 
+		          			a.ID,
+							a.NAME,
+							a.CODE,
+							c.NAME ORG_NAME,
+							b.NAME STYLE_NAME,
+							a.STATUS,
+							a.IPADDR,
+							a.LOCATION,
+							a.HEARTBEAT,
+							a.CREATE_TIME
+		                  <include refid="sqlQuery"/>
+		                 ORDER BY a.CREATE_TIME DESC) tt
+		         WHERE ROWNUM <![CDATA[<=]]> (#{end, jdbcType=INTEGER} + #{start, jdbcType=INTEGER})) t
+		 WHERE t.ROWNO <![CDATA[>=]]> #{start, jdbcType=INTEGER}
+	</select>
+	<select id="countData" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQueryData"/>
+	</select>
+	<select id="queryData" resultMap="terminalQueryData">
+		SELECT t.*
+		  FROM (SELECT tt.*, ROWNUM AS ROWNO
+		          FROM (SELECT 
+		          			a.ID,
+							a.NAME,
+							a.CODE,
+							b.NAME STYLE_NAME,
+							a.STATUS,
+							a.IPADDR,
+							a.HEARTBEAT,
+							a.CREATE_TIME
+		                  <include refid="sqlQueryData"/>
+		                 ORDER BY a.CREATE_TIME DESC) tt
+		         WHERE ROWNUM <![CDATA[<=]]> (#{end, jdbcType=INTEGER} + #{start, jdbcType=INTEGER})) t
+		 WHERE t.ROWNO <![CDATA[>=]]> #{start, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="terminal">
+		SELECT a.* FROM FV_TERMINAL a where 1=1
+		<if test="param.orgIdFlag != null and param.orgIdFlag == 'true'">
+		 	AND (a.ORG_ID is not null or a.ORG_ID != '')
+		</if>
+			order by a.CREATE_TIME desc
+	</select>
+	<select id="queryByUserId" resultMap="terminal">
+		SELECT distinct a.*
+		  	FROM FV_TERMINAL a
+		  	join FV_ROLE_ORGANIZATION b on a.ORG_ID = b.ORGANIZATION_ID
+		  	JOIN FV_USER_ROLE c ON b.ROLE_ID = c.ROLE_ID
+		 WHERE c.USER_ID = #{userId, jdbcType=VARCHAR}
+	</select>
+	<select id="queryTimeout" resultMap="terminal">
+		SELECT a.*
+		  	FROM FV_TERMINAL a
+		 WHERE (SYSDATE - a.HEARTBEAT) is not null and (SYSDATE - a.HEARTBEAT) > #{timeout, jdbcType=INTEGER}
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO FV_TERMINAL
+		  (ID,
+		   NAME,
+		   CODE,
+		   ORG_ID,
+		   STYLE_ID,
+		   STATUS,
+		   IPADDR,
+		   LOCATION,
+		   HEARTBEAT,
+		   VERSION,
+		   CREATE_TIME,
+		   CREATE_BY,
+		   REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		   #{param.name, jdbcType=VARCHAR},
+		   #{param.code, jdbcType=VARCHAR},
+		   #{param.orgId, jdbcType=VARCHAR},
+		   #{param.styleId, jdbcType=VARCHAR},
+		   #{param.status, jdbcType=VARCHAR},
+		   #{param.ipaddr, jdbcType=VARCHAR},
+		   #{param.location, jdbcType=VARCHAR},
+		   #{param.heartbeat, jdbcType=TIMESTAMP},
+		   #{param.version, jdbcType=INTEGER},
+		   #{param.createTime, jdbcType=TIMESTAMP},
+		   #{param.createBy, jdbcType=VARCHAR},
+		   #{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO FV_TERMINAL
+		  (ID,
+		   NAME,
+		   CODE,
+           ORG_ID,
+           STYLE_ID,
+           STATUS,
+		   IPADDR,
+		   LOCATION,
+		   VERSION,
+		   CREATE_TIME,
+		   CREATE_BY,
+		   REMARKS)   
+	    <foreach close=")" collection="list" item="param" index="index" open="(" separator="union">   
+    	  select   
+       		#{param.id, jdbcType=VARCHAR},
+		    #{param.name, jdbcType=VARCHAR},
+		    #{param.code, jdbcType=VARCHAR},
+		    #{param.orgId, jdbcType=VARCHAR},
+            #{param.styleId, jdbcType=VARCHAR},
+            #{param.status, jdbcType=VARCHAR},
+		    #{param.ipaddr, jdbcType=VARCHAR},
+		    #{param.location, jdbcType=VARCHAR},
+		    #{param.version, jdbcType=INTEGER},
+		    #{param.createTime, jdbcType=TIMESTAMP},
+		    #{param.createBy, jdbcType=VARCHAR},
+		    #{param.remarks, jdbcType=VARCHAR} 
+    	  from dual   
+	    </foreach>
+	</insert>
+	
+	<update id="update">
+		UPDATE FV_TERMINAL a
+		<set>
+		<if test="param.name != null and param.name != ''">
+		 	a.NAME = #{param.name, jdbcType=VARCHAR},
+		</if>
+		<if test="param.code != null and param.code != ''">
+		 	a.CODE = #{param.code, jdbcType=VARCHAR},
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+		 	a.ORG_ID = #{param.orgId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.styleId != null and param.styleId != ''">
+		 	a.STYLE_ID = #{param.styleId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.status != null and param.status != ''">
+		 	a.STATUS = #{param.status, jdbcType=VARCHAR},
+		</if>
+		<if test="param.ipaddr != null and param.ipaddr != ''">
+		 	a.IPADDR = #{param.ipaddr, jdbcType=VARCHAR},
+		</if>
+		<if test="param.heartbeat != null">
+		 	a.HEARTBEAT = #{param.heartbeat, jdbcType=TIMESTAMP},
+		</if>
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	<update id="updateByIds">
+		UPDATE FV_TERMINAL a SET
+			a.ORG_ID = #{param.orgId, jdbcType=VARCHAR},
+			a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+			a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		WHERE a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</update>
+	<update id="updateByTimeout">
+		UPDATE FV_TERMINAL t SET
+			t.STATUS = #{param.status, jdbcType=VARCHAR}
+		WHERE t.ID in (
+			SELECT a.ID
+			  	FROM FV_TERMINAL a
+			 WHERE (SYSDATE - a.HEARTBEAT) is not null and (ROUND(TO_NUMBER((SYSDATE - a.HEARTBEAT) * 24 * 60)) * 100) > #{timeout, jdbcType=INTEGER}
+			 	AND (a.STATUS != '0'))
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete FROM FV_TERMINAL a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete FROM FV_TERMINAL a where a.ID = #{param.id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete FROM FV_TERMINAL a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

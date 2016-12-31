@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.IEmployeeMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.Employee" id="employee">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="SEX" property="sex" jdbcType="INTEGER" />
+		<result column="AGE" property="age" jdbcType="INTEGER" />
+		<result column="IDCARD" property="idcard" jdbcType="VARCHAR" />
+		<result column="BIRTH_DATE" property="birthDate" jdbcType="TIMESTAMP" />
+		<result column="ORG_ID" property="orgId" jdbcType="VARCHAR" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap type="com.grgbanking.fingervein.data.EmployeeData" id="employeeData">
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+    </resultMap>
+
+	<sql id="sqlQuery">
+		FROM FV_EMPLOYEE a where 1=1
+		
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="employee">
+    	SELECT * FROM FV_EMPLOYEE WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="employee">
+    	SELECT a.* FROM FV_EMPLOYEE a WHERE 1=1
+    	   AND a.CODE = #{param.code, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 根据ID查找 -->
+    <select id="getDataById" resultMap="employeeData">
+        SELECT a.NAME,
+               a.CODE,
+               b.NAME ORG_NAME
+            FROM FV_EMPLOYEE a 
+            left join FV_ORGANIZATION b on a.ORG_ID = b.ID
+            WHERE a.ID = #{id, jdbcType=VARCHAR}
+    </select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="employee">
+		SELECT t.*
+		  FROM (SELECT tt.*, ROWNUM AS ROWNO
+		          FROM (SELECT a.*
+		                  <include refid="sqlQuery"/>
+		                 ORDER BY a.CREATE_TIME DESC) tt
+		         WHERE ROWNUM <![CDATA[<=]]> (#{end, jdbcType=INTEGER} + #{start, jdbcType=INTEGER})) t
+		 WHERE t.ROWNO <![CDATA[>]]> #{start, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="employee">
+		SELECT a.* FROM FV_EMPLOYEE a
+			order by a.CREATE_TIME desc
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO FV_EMPLOYEE
+		  (ID,
+		   	NAME,
+			CODE,
+			SEX,
+			AGE,
+			IDCARD,
+			BIRTH_DATE,
+			ORG_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		   	#{param.name, jdbcType=VARCHAR},
+			#{param.code, jdbcType=VARCHAR},
+			#{param.sex, jdbcType=INTEGER},
+			#{param.age, jdbcType=INTEGER},
+			#{param.idcard, jdbcType=VARCHAR},
+			#{param.birthDate, jdbcType=TIMESTAMP},
+			#{param.orgId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO FV_EMPLOYEE
+		  (ID,
+		   	NAME,
+			CODE,
+			SEX,
+			AGE,
+			IDCARD,
+			BIRTH_DATE,
+			ORG_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)   
+	    <foreach close=")" collection="list" item="param" index="index" open="(" separator="union">   
+    	  select   
+       		#{param.id, jdbcType=VARCHAR},
+		   	#{param.name, jdbcType=VARCHAR},
+			#{param.code, jdbcType=VARCHAR},
+			#{param.sex, jdbcType=INTEGER},
+			#{param.age, jdbcType=INTEGER},
+			#{param.idcard, jdbcType=VARCHAR},
+			#{param.birthDate, jdbcType=TIMESTAMP},
+			#{param.orgId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR} 
+    	  from dual   
+	    </foreach>
+	</insert>
+	
+	<update id="update">
+		UPDATE FV_EMPLOYEE a
+		<set>
+		<if test="param.name != null and param.name != ''">
+		 a.NAME = #{param.name, jdbcType=VARCHAR},
+		</if>
+		<if test="param.code != null and param.code != ''">
+		 a.CODE = #{param.code, jdbcType=VARCHAR},
+		</if>
+		<if test="param.sex != null and param.sex != ''">
+		 a.SEX = #{param.sex, jdbcType=INTEGER},
+		</if>
+		<if test="param.age != null and param.age != ''">
+		 a.AGE = #{param.age, jdbcType=INTEGER},
+		</if>
+		<if test="param.idcard != null and param.idcard != ''">
+		 a.IDCARD = #{param.idcard, jdbcType=VARCHAR},
+		</if>
+		<if test="param.birthDate != null and param.birthDate != ''">
+		 a.BIRTH_DATE = #{param.birthDate, jdbcType=TIMESTAMP},
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+		 a.ORG_ID = #{param.orgId, jdbcType=VARCHAR},
+		</if>
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete FROM FV_EMPLOYEE a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete FROM FV_EMPLOYEE a where a.ID = #{param.id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete FROM FV_EMPLOYEE a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

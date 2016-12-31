@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.IFingerVeinMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.FingerVein" id="fingerVein">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="SEQ" property="seq" jdbcType="VARCHAR" />
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="FEATURE" property="feature" jdbcType="BLOB" />
+		<result column="EMPLOYEE_ID" property="employeeId" jdbcType="VARCHAR" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlQuery">
+		FROM FINGERVEIN a where 1=1
+		
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="fingerVein">
+    	SELECT * FROM FINGERVEIN WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="fingerVein">
+    	SELECT * FROM FINGERVEIN WHERE ID = #{param.id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="fingerVein">
+		SELECT a.* <include refid="sqlQuery"/>
+			order by a.CREATE_TIME desc limit #{start, jdbcType=INTEGER}, #{end, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="fingerVein">
+		SELECT a.* FROM FINGERVEIN a
+		    where a.STATUS = #{param.status, jdbcType=VARCHAR}
+			order by a.CREATE_TIME desc
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO FINGERVEIN
+		  (ID,
+		    SEQ,
+			STATUS,
+			FEATURE,
+			EMPLOYEE_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.seq, jdbcType=VARCHAR},
+			#{param.status, jdbcType=VARCHAR},
+			#{param.feature, jdbcType=BLOB},
+			#{param.employeeId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO FINGERVEIN
+		  (ID,
+		    SEQ,
+			STATUS,
+			FEATURE,
+			EMPLOYEE_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		<foreach collection="list" item="param" index="index" separator="," >
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.seq, jdbcType=VARCHAR},
+			#{param.status, jdbcType=VARCHAR},
+			#{param.feature, jdbcType=VARCHAR},
+			#{param.employeeId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+		</foreach>  
+	</insert>
+	
+	<update id="update">
+		UPDATE FINGERVEIN a
+		<set>
+		<if test="param.seq != null and param.seq != ''">
+ a.SEQ = #{param.seq, jdbcType=VARCHAR},
+</if>
+<if test="param.status != null and param.status != ''">
+ a.STATUS = #{param.status, jdbcType=VARCHAR},
+</if>
+<if test="param.feature != null and param.feature != ''">
+ a.FEATURE = #{param.feature, jdbcType=VARCHAR},
+</if>
+<if test="param.employeeId != null and param.employeeId != ''">
+ a.EMPLOYEE_ID = #{param.employeeId, jdbcType=VARCHAR},
+</if>
+
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete from FINGERVEIN a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete from FINGERVEIN a where a.ID = #{param.id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete from FINGERVEIN a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

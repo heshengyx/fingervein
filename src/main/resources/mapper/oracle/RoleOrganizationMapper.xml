@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.IRoleOrganizationMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.RoleOrganization" id="roleOrganization">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+		<result column="ORGANIZATION_ID" property="organizationId" jdbcType="VARCHAR" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlQuery">
+		FROM FV_ROLE_ORGANIZATION a where 1=1
+		
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="roleOrganization">
+    	SELECT * FROM FV_ROLE_ORGANIZATION WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="roleOrganization">
+    	SELECT * FROM FV_ROLE_ORGANIZATION WHERE ID = #{param.id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="roleOrganization">
+		SELECT t.*
+		  FROM (SELECT tt.*, ROWNUM AS ROWNO
+		          FROM (SELECT a.*
+		                  <include refid="sqlQuery"/>
+		                 ORDER BY a.CREATE_TIME DESC) tt
+		         WHERE ROWNUM <![CDATA[<=]]> (#{end, jdbcType=INTEGER} + #{start, jdbcType=INTEGER})) t
+		 WHERE t.ROWNO <![CDATA[>=]]> #{start, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="roleOrganization">
+		SELECT a.* FROM FV_ROLE_ORGANIZATION a
+			where a.ROLE_ID = #{param.roleId, jdbcType=VARCHAR}
+			order by a.CREATE_TIME desc
+	</select>
+	<select id="queryByUserId" resultMap="roleOrganization">
+		SELECT distinct a.*
+		  	FROM FV_ROLE_ORGANIZATION a
+		  	JOIN FV_USER_ROLE b ON a.ROLE_ID = b.ROLE_ID
+		 WHERE b.USER_ID = #{userId, jdbcType=VARCHAR}
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO FV_ROLE_ORGANIZATION
+		  (ID,
+		   	ROLE_ID,
+			ORGANIZATION_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		   	#{param.roleId, jdbcType=VARCHAR},
+			#{param.organizationId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO FV_ROLE_ORGANIZATION
+		  (ID,
+		   	ROLE_ID,
+			ORGANIZATION_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)   
+	    <foreach close=")" collection="list" item="param" index="index" open="(" separator="union">   
+	      select   
+	       	#{param.id, jdbcType=VARCHAR},
+		   	#{param.roleId, jdbcType=VARCHAR},
+			#{param.organizationId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR} 
+	      from dual   
+	    </foreach>
+	</insert>
+	
+	<update id="update">
+		UPDATE FV_ROLE_ORGANIZATION a
+		<set>
+		<if test="param.roleId != null and param.roleId != ''">
+		 a.ROLE_ID = #{param.roleId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.organizationId != null and param.organizationId != ''">
+		 a.ORGANIZATION_ID = #{param.organizationId, jdbcType=VARCHAR},
+		</if>
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete FROM FV_ROLE_ORGANIZATION a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete FROM FV_ROLE_ORGANIZATION a where a.ROLE_ID = #{param.roleId, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete FROM FV_ROLE_ORGANIZATION a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

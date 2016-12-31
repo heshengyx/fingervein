@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.grgbanking.fingervein.mapper.IRecognitionLogMapper">
+	<resultMap type="com.grgbanking.fingervein.entity.RecognitionLog" id="recognitionLog">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="SEQ" property="seq" jdbcType="VARCHAR" />
+		<result column="THRESHOLD" property="threshold" jdbcType="VARCHAR" />
+		<result column="INDEXED" property="indexed" jdbcType="INTEGER" />
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+		<result column="IPADDR" property="ipaddr" jdbcType="VARCHAR" />
+		<result column="FILE_PATH" property="filePath" jdbcType="VARCHAR" />
+		<result column="TERMINAL_ID" property="terminalId" jdbcType="VARCHAR" />
+		<result column="EMPLOYEE_ID" property="employeeId" jdbcType="VARCHAR" />
+		<result column="FINGERVEIN_ID" property="fingerveinId" jdbcType="VARCHAR" />
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap type="com.grgbanking.fingervein.data.RecognitionLogData" id="recognitionLogData">
+        <result column="IPADDR" property="ipaddr" jdbcType="VARCHAR" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="REC_SUCCTOTAL" property="recSuccTotal" jdbcType="INTEGER" />
+        <result column="REC_FAILTOTAL" property="recFailTotal" jdbcType="INTEGER" />
+        <result column="PWD_SUCCTOTAL" property="pwdSuccTotal" jdbcType="INTEGER" />
+        <result column="PWD_FAILTOTAL" property="pwdFailTotal" jdbcType="INTEGER" />
+    </resultMap>
+
+	<sql id="sqlQuery">
+		FROM RECOGNITION_LOG a where 1=1
+		
+		<if test="param.name != null and param.name != ''">
+            AND a.NAME = #{param.name}
+        </if>
+		<if test="param.ipaddr != null and param.ipaddr != ''">
+            AND a.IPADDR = #{param.ipaddr}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND a.STATUS = #{param.status}
+        </if>
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+        AND a.TYPE = '1'
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="recognitionLog">
+    	SELECT * FROM RECOGNITION_LOG WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="recognitionLog">
+    	SELECT * FROM RECOGNITION_LOG WHERE ID = #{param.id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="recognitionLog">
+		SELECT a.* <include refid="sqlQuery"/>
+			order by a.CREATE_TIME desc limit #{start, jdbcType=INTEGER}, #{end, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="recognitionLog">
+		SELECT a.* FROM RECOGNITION_LOG a
+			order by a.CREATE_TIME desc
+	</select>
+	<select id="queryIpaddr" resultMap="recognitionLog">
+        SELECT a.IPADDR FROM RECOGNITION_LOG a
+            group by a.IPADDR
+    </select>
+    <select id="queryReport" resultMap="recognitionLogData">
+	    SELECT a.IPADDR,
+	       count(case
+	               when a.TYPE = '1' and a.STATUS = '1' then
+	                1
+	             end) REC_SUCCTOTAL,
+	       count(case
+	               when a.TYPE = '1' and a.STATUS = '0' then
+	                1
+	             end) REC_FAILTOTAL,
+	       count(case
+	               when a.TYPE = '2' and a.STATUS = '1' then
+	                1
+	             end) PWD_SUCCTOTAL,
+	       count(case
+	               when a.TYPE = '2' and a.STATUS = '0' then
+	                1
+	             end) PWD_FAILTOTAL
+		  from RECOGNITION_LOG a
+		 where 1 = 1
+		 	<if test="param.ipaddr != null and param.ipaddr != ''">
+	            AND a.IPADDR = #{param.ipaddr}
+	        </if>
+	        <if test="param.status != null and param.status != ''">
+	            AND a.STATUS = #{param.status}
+	        </if>
+            <if test="param.createDateBegin != null and param.createDateBegin != ''">
+	            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+	        </if>
+	        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+	            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+	        </if>
+		 group by a.IPADDR
+    </select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save">
+		INSERT INTO RECOGNITION_LOG
+		  (ID,
+		    NAME,
+			CODE,
+			SEQ,
+			THRESHOLD,
+			INDEXED,
+			TYPE,
+			STATUS,
+			ORG_NAME,
+			IPADDR,
+			FILE_PATH,
+			TERMINAL_ID,
+			EMPLOYEE_ID,
+			FINGERVEIN_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.name, jdbcType=VARCHAR},
+			#{param.code, jdbcType=VARCHAR},
+			#{param.seq, jdbcType=VARCHAR},
+			#{param.threshold, jdbcType=VARCHAR},
+			#{param.indexed, jdbcType=INTEGER},
+			#{param.type, jdbcType=VARCHAR},
+			#{param.status, jdbcType=VARCHAR},
+			#{param.orgName, jdbcType=VARCHAR},
+			#{param.ipaddr, jdbcType=VARCHAR},
+			#{param.filePath, jdbcType=VARCHAR},
+			#{param.terminalId, jdbcType=VARCHAR},
+			#{param.employeeId, jdbcType=VARCHAR},
+			#{param.fingerveinId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO RECOGNITION_LOG
+		  (ID,
+		    NAME,
+			CODE,
+			SEQ,
+			THRESHOLD,
+			INDEXED,
+			STATUS,
+			ORG_NAME,
+			IPADDR,
+			TERMINAL_ID,
+			EMPLOYEE_ID,
+			FINGERVEIN_ID,
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
+		VALUES
+		<foreach collection="list" item="param" index="index" separator="," >
+		  (#{param.id, jdbcType=VARCHAR},
+		    #{param.name, jdbcType=VARCHAR},
+			#{param.code, jdbcType=VARCHAR},
+			#{param.seq, jdbcType=VARCHAR},
+			#{param.threshold, jdbcType=VARCHAR},
+			#{param.indexed, jdbcType=INTEGER},
+			#{param.status, jdbcType=VARCHAR},
+			#{param.orgName, jdbcType=VARCHAR},
+			#{param.ipaddr, jdbcType=VARCHAR},
+			#{param.terminalId, jdbcType=VARCHAR},
+			#{param.employeeId, jdbcType=VARCHAR},
+			#{param.fingerveinId, jdbcType=VARCHAR},
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
+		</foreach>  
+	</insert>
+	
+	<update id="update">
+		UPDATE RECOGNITION_LOG a
+		<set>
+		<if test="param.name != null and param.name != ''">
+		 a.NAME = #{param.name, jdbcType=VARCHAR},
+		</if>
+		<if test="param.code != null and param.code != ''">
+		 a.CODE = #{param.code, jdbcType=VARCHAR},
+		</if>
+		<if test="param.seq != null and param.seq != ''">
+		 a.SEQ = #{param.seq, jdbcType=VARCHAR},
+		</if>
+		<if test="param.threshold != null and param.threshold != ''">
+		 a.THRESHOLD = #{param.threshold, jdbcType=VARCHAR},
+		</if>
+		<if test="param.indexed != null and param.indexed != ''">
+		 a.INDEXED = #{param.indexed, jdbcType=INTEGER},
+		</if>
+		<if test="param.status != null and param.status != ''">
+		 a.STATUS = #{param.status, jdbcType=VARCHAR},
+		</if>
+		<if test="param.orgName != null and param.orgName != ''">
+		 a.ORG_NAME = #{param.orgName, jdbcType=VARCHAR},
+		</if>
+		<if test="param.ipaddr != null and param.ipaddr != ''">
+		 a.IPADDR = #{param.ipaddr, jdbcType=VARCHAR},
+		</if>
+		<if test="param.terminalId != null and param.terminalId != ''">
+		 a.TERMINAL_ID = #{param.terminalId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.employeeId != null and param.employeeId != ''">
+		 a.EMPLOYEE_ID = #{param.employeeId, jdbcType=VARCHAR},
+		</if>
+		<if test="param.fingerveinId != null and param.fingerveinId != ''">
+		 a.FINGERVEIN_ID = #{param.fingerveinId, jdbcType=VARCHAR},
+		</if>
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete from RECOGNITION_LOG a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete from RECOGNITION_LOG a where a.ID = #{param.id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete from RECOGNITION_LOG a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>
