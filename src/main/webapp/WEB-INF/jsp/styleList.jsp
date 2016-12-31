@@ -7,36 +7,38 @@
     </head>
     
     <body>
-	    <div data-options="region:'center',border:false">
-		    <div class="tag-content">
-		    <!-- search -->
-		    <form class="data-form" id="searchForm" method="post">
-		    <table>
-		        <tr>
-		        	<td class="td-right">类别名称：</td>
-		            <td><input type="text" id="nameQuery" style="width:150px;"></td>
-		            <td class="td-right">创建时间：</td>
-		            <td>
-		            <input class="easyui-datebox" type="text" id="createDateBeginQuery" style="width:100px;">~
-		            <input class="easyui-datebox" type="text" id="createDateEndQuery" style="width:100px;"></td>
-		        </tr>
-		        <tr>
-		            <td></td>
-		            <td colspan="5">
-		            <a class="easyui-linkbutton" id="searchBtn" href="javascript:void(0);" data-options="iconCls:'icon-search'">查询</a>&nbsp;
-		            <a class="easyui-linkbutton" id="resetBtn" href="javascript:void(0);" data-options="iconCls:'icon-back'">重置</a>
-		            </td>
-		        </tr>
-		    </table>
-		    </form>
-		    <!-- search -->
+	    <div class="easyui-panel" data-options="border:false,fit:true">
 		    <!-- datagrid -->
+		    <table id="datagrid" style="width:100%;" data-options="border:false,fit:true"></table>
 		    <div id="tools">
-		        <a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-add',plain:true" id="addBtn">新增</a>
-		        <a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-remove',plain:true" id="deleteBtn">删除</a>
-		        <a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-control_add_blue',plain:true" id="addBatchBtn">批量</a>
+		    	<!-- search -->
+		    	<form class="data-form" id="searchForm" method="post">
+			    <table>
+			        <tr>
+			        	<td class="td-right">类别名称：</td>
+			            <td><input type="text" id="nameQuery" style="width:150px;"></td>
+			            <td class="td-right">创建时间：</td>
+			            <td>
+			            <input class="easyui-datebox" type="text" id="createDateBeginQuery" style="width:100px;">~
+			            <input class="easyui-datebox" type="text" id="createDateEndQuery" style="width:100px;"></td>
+			        </tr>
+			        <tr>
+			            <td></td>
+			            <td colspan="5">
+			            <a class="easyui-linkbutton" id="searchBtn" href="javascript:void(0);" data-options="iconCls:'icon-search'">查询</a>&nbsp;
+			            <a class="easyui-linkbutton" id="resetBtn" href="javascript:void(0);" data-options="iconCls:'icon-back'">重置</a>
+			            </td>
+			        </tr>
+			    </table>
+			    </form>
+			    <!-- search -->
+		    	<div style="border-top:1px solid #DDDDDD;">
+		        	<a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-add',plain:true" id="addBtn">新增</a>
+		        	<a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-remove',plain:true" id="deleteBtn">删除</a>
+		        	<a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-control_add_blue',plain:true" id="addBatchBtn">批量</a>
+		        </div>
 		    </div>
-		    <table id="datagrid" style="width:100%;"></table>
+		    
 		    <!-- datagrid -->
 		    <!-- 新增 -->
 		    <div class="easyui-window" id="editWin" data-options="modal:true,closed:true,resizable:false,
@@ -89,7 +91,6 @@
 		        <form id="addBatchForm" method="post"></form>
 		    </div>
 		    <!-- 批量 -->
-		    </div>
 	    </div>
 	    <jscript>
 	    <!-- js -->
@@ -102,7 +103,6 @@
 	            toolbar: '#tools',
 	            idField: 'id',
 	            autoRowHeight: true,
-	            fixed: true,
 	            fitColumns: true,
 	            showFooter: true,
 	            pagination: true,
