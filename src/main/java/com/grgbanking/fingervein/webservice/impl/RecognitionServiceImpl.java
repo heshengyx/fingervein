@@ -21,7 +21,8 @@ public class RecognitionServiceImpl implements IRecognitionService {
 	
 	@Override
 	public Result recognitionFingerVeinOneToOne(String json, String ipaddr) {
-		return recognitionService.recognitionFingerVeinOneToOne(json, ipaddr);
+		//return recognitionService.recognitionFingerVeinOneToOne(json, ipaddr);
+		return null;
 	}
 
 }
